@@ -50,9 +50,21 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    __environment__
-    
     steps:
+      - name: Get Access to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID_PCF_DB_MANAGER }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID_PCF_DB_MANAGER }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID_PCF_DB_MANAGER }}
+          enable-AzPSSession: true
+          
+      - name: Get Azure Access Token for Function
+        run: |
+          echo 'AZURE_ACCESS_TOKEN<<EOF' >> $GITHUB_ENV
+          az account get-access-token --query accessToken --output tsv >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+            
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
